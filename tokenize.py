@@ -1,10 +1,20 @@
 import re
 from stemming.porter2 import stem
 from nltk.corpus import stopwords
-#from nltk.stem.api.StemmerI import stem
+from nltk.stem import PorterStemmer
+
+stemmer = None
 
 def base(s):
-	return stem(s.translate(None, ''))
+	global stemmer
+	if stemmer == None:
+		stemmer = PorterStemmer()
+	ss = s
+	try:
+		ss = stemmer.stem(s)
+	except:
+		pass
+	return ss
 
 stopwords = None
 

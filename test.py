@@ -9,20 +9,14 @@ def extract(i):
 	global index
 	t = index[i:]
 	j = 0
-	while (t[j] != '$'):
+	while (t[j] != '#'):
 		j+=1
 	t = t[:j]
-	t = t.split('|')
-	dic = {}
-	for x in t:
-		(k, v) = x.split('/')
-		if k=='l':
-			dic[k] = [int(cc) for cc in v.split(',')]
-		else:
-			dic[k] = int(v)
-	return dic
+	(fst, snd) = t.split('@')
+	fst = int(fst.split('/')[-1])
+	return {'p': fst, 'v': snd}
 
-
+cc = 0
 for word in wl:
 	(c, nxt) = wl[word]
 	print word
@@ -32,4 +26,6 @@ for word in wl:
 		if blk['p'] < 0:
 			break
 		blk = extract(blk['p'])
-	break
+	cc+=1
+	if c>5:
+		break
