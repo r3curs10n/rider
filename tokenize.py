@@ -31,4 +31,11 @@ def is_stop_word(w):
 def get_tokens(src):
 	src = src.lower()
 	r = re.compile('[a-z][a-z\']*[a-z]')
-	return [(x.start(), base(x.group(0))) for x in r.finditer(src) if not is_stop_word(x.group(0))]
+	tok_list = []
+	i = -1
+	for x in r.finditer(src):
+		i+=1
+		if is_stop_word(x.group(0)):
+			continue
+		tok_list.append((x.start(), i, base(x.group(0))))
+	return tok_list

@@ -62,11 +62,11 @@ try:
 		src = open(f).read()
 		src = filter_html.wipe_html(src)
 		toks = tokenize.get_tokens(src)
-		for (pos, t) in toks:
+		for (pos, wpos, t) in toks:
 			if t not in local_pl:
-				local_pl[t] = [pos]
+				local_pl[t] = [(pos, lpos)]
 			else:
-				local_pl[t].append(pos)
+				local_pl[t].append((pos, lpos))
 		dpl.append((doc_id,local_pl))
 		i += 1
 		fcs_i += 1
