@@ -41,6 +41,7 @@ def split_node_body(body):
 
 def get_list(f, head_ptr):
 	acc = []
+	next_ptr = head_ptr
 	while True:
 		(next_ptr, body) = get_node(f, next_ptr)
 		acc += split_node_body(body)
