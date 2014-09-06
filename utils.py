@@ -10,9 +10,9 @@ if arg == 'cleanup':
   os.system('rm %s' % ' '.join(files))
 elif arg == 'backup':
   bkpdir = 'backup/%s' % str(time.time())
+  os.system('mkdir %s' % bkpdir)
   for f in files:
-    os.system('mkdir %s' % bkpdir)
-    os.system('mv %s %s' % (f, bkpdir + '/' + f))
+    os.system('cp %s %s' % (f, bkpdir + '/' + f))
 else:
   print 'invalid arg'
 

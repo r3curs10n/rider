@@ -8,34 +8,51 @@ def load_state():
 		return jc
 	f = open('job_data', 'rb')
 	jc = pickle.load(f)
+	f.close()
 	return jc
+
+def get_file_list(path):
+	return sorted([path+'/'+x for x in listdir(path) if isfile(path+'/'+x) and x.isdigit()], key=lambda x: int(x.split('/')[-1]))
 
 def get_files(n):
 
 	jc = load_state()
 
-	path = str(jc['dir_num'])
+	path = jc['dir_num']
 	offset = jc['file_num']
-	files = sorted([path+'/'+x for x in listdir(path) if isfile(path+'/'+x) and x.isdigit()], key=lambda x: int(x.split('/')[1]))
-	files = files[offset:]
-	if len(files)>n:
-		return files[:n]
-	path = str(jc['dir_num']+1)
-	files2 = sorted([path+'/'+x for x in listdir(path) if isfile(path+'/'+x) and x.isdigit()], key=lambda x: int(x.split('/')[1]))
-	return files + files2[:n-len(files)]
+	acc = []
+	while len(acc) < n:
+		files = get_file_list(str(path))[offset:]
+		if len(files) > n-len(acc):
+			acc += files[:n-len(acc)]
+			break
+		else:
+			acc += files
+			offset = 0
+			path += 1
+	return acc
 
 def done(n):
 
 	jc = load_state()
 
-	path = str(jc['dir_num'])
+	path = jc['dir_num']
 	offset = jc['file_num']
-	files = sorted([path+'/'+x for x in listdir(path) if isfile(path+'/'+x) and x.isdigit()], key=lambda x: int(x.split('/')[1]))
-	files = files[offset:]
-	if len(files)>n:
-		jc['file_num'] += n
-	else:
-		jc['dir_num'] += 1
-		jc['file_num'] = n-len(files)
-	f = open('job_data', 'wb')
+
+	acc = []
+	while len(acc) < n:
+		files = get_file_list(str(path))[offset:]
+		if len(files) > n-len(acc):
+			acc += files[:n-len(acc)]
+			offset += n-len(acc)
+			break
+		else:
+			acc += files
+			offset = 0
+			path += 1
+
+	jc['dir_num'] = path
+	jc['file_num'] = offset
+	f=open('job_data', 'wb')
 	pickle.dump(jc, f)
+	f.close()
