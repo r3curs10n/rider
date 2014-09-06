@@ -69,7 +69,11 @@ def begin_indexing():
 			flush_pls(dpl)
 			dpl = []
 		local_pl = {}
-		src = open(f).read()
+		if getsize(f) > 3000000:
+			continue
+		fptr = open(f)
+		src = fptr.read()
+		fptr.close()
 		src = filter_html.wipe_html(src)
 		toks = tokenize.get_tokens(src)
 		for (pos, wpos, t) in toks:
@@ -89,7 +93,7 @@ except Exception, e:
 	index_f.close()
 	print 'indexing failed'
 	print e.__doc__
-	print e.message
+	print e.strerror
 	sys.exit(1)
 
 job_chunker.done(chunk)
