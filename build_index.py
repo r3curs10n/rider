@@ -1,12 +1,21 @@
-import filter_html, tokenize, job_chunker
+from nltk import clean_html
+import filter_html, tokenizem, job_chunker
 from os import listdir
 from os.path import isfile, join, getsize
-import pickle
+import cPickle
 from tobinary import *
 import sys
 import cStringIO
+import signal
 
-chunk = 10000
+def handler(signum, frame):
+  raise Exception('timeout')
+
+signal.signal(signal.SIGALRM, handler)
+
+pickle = cPickle
+
+chunk = 500000
 
 fcs = 5000
 fcs_i = 0
@@ -39,7 +48,7 @@ def flush_pls(dpl):
 			nodes[w].append(e)
 	for w in nodes:
 		if w not in wl:
-			wl[w] = (1, nxt)
+			wl[w] = (len(nodes[w]), nxt)
 			block = serialize_node(-1, nodes[w])
 			index_f.write(block)
 			nxt += len(block)
@@ -47,7 +56,7 @@ def flush_pls(dpl):
 			(doc_count, prev_offset) = wl[w]
 			block = serialize_node(prev_offset, nodes[w])
 			index_f.write(block)
-			wl[w] = (doc_count+1, nxt)
+			wl[w] = (doc_count+len(nodes[w]), nxt)
 			nxt += len(block)
 
 def begin_indexing():
@@ -72,30 +81,37 @@ def begin_indexing():
 		if getsize(f) > 3000000:
 			continue
 		fptr = open(f)
-		src = fptr.read()
+		src = fptr.read().lower()
 		fptr.close()
-		src = filter_html.wipe_html(src)
-		toks = tokenize.get_tokens(src)
-		for (pos, wpos, t) in toks:
+		signal.alarm(2)
+		try:
+			src = clean_html(src)
+		except Exception, e:
+			continue
+		signal.alarm(0)
+		toks = tokenizem.get_tokens(src)
+		for (pos, t) in toks:
+			if len(t) > 15:
+				continue
 			if t not in local_pl:
-				local_pl[t] = [(pos, wpos)]
+				local_pl[t] = [pos]
 			else:
-				local_pl[t].append((pos, wpos))
+				local_pl[t].append(pos)
 		dpl.append((doc_id,local_pl))
 		i += 1
 		fcs_i += 1
-		sys.stderr.write(str(i) + '\n')
+		#sys.stderr.write(str(i) + '\n')
+		if i % 1000 == 0:
+		  print i
 	flush_pls(dpl)
 try:
 	begin_indexing()
-except Exception, e:
+	pass
+except:
 	index_f.truncate(prev_index_size)
 	index_f.close()
 	print 'indexing failed'
-	print e.__doc__
-	print e.strerror
 	sys.exit(1)
-
 job_chunker.done(chunk)
 dd = open('wdict', 'wb')
 pickle.dump((wl,cc), dd)

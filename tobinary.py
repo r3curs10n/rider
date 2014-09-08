@@ -1,5 +1,5 @@
 def serialize_entry(pl, doc_id):
-	return 'd/%d|t/%d|l/%s' % (doc_id, len(pl), ','.join(['(%d,%d)'%(x[0],x[1]) for x in pl]))
+	return 'd/%d|t/%d|l/%s' % (doc_id, len(pl), ','.join([str(x) for x in pl]))
 
 def serialize_node(prev, entry_list):
 	return 'p/%d@%s#' % (prev, '$'.join(entry_list))
@@ -8,6 +8,7 @@ def deserialize(block):
 	fields = block.split('|')
 
 def get_node(f, head_ptr):
+	f.seek(head_ptr)
 	node_strs = []
 	buf_size = 1024
 	while True:
