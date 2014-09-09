@@ -30,7 +30,7 @@ def entrify(doc):
 	for field in fields:
 		(k, v) = field.split('/')
 		if k=='l':
-			v = v
+			v = map(int, v.split(','))
 		else:
 			v = int(v)
 		dic[k] = v

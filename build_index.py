@@ -15,7 +15,7 @@ signal.signal(signal.SIGALRM, handler)
 
 pickle = cPickle
 
-chunk = 500000
+chunk = 470000
 
 fcs = 5000
 fcs_i = 0
