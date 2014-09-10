@@ -1,6 +1,6 @@
 from tobinary import get_list
 from math import log
-import pickle
+import cPickle
 import os
 
 from nltk.stem import PorterStemmer
@@ -18,7 +18,7 @@ def base(s):
 		pass
 	return ss
 
-(wdict, cc) = pickle.load(open('wdict', 'rb'))
+(wdict, cc) = cPickle.load(open('wdict', 'rb'))
 f = open('index')
 print 'loaded'
 
@@ -116,8 +116,8 @@ def phnxt(l1, l2):
 
 def phrasal(terms, msf=lambda x, y: x+y):
 	t1l = get_scored_list(terms[0])
-	acc = []
 	for t in terms[1:]:
+		acc = []
 		nl = get_scored_list(t)
 		i=0
 		j=0
@@ -126,7 +126,7 @@ def phrasal(terms, msf=lambda x, y: x+y):
 		while i<n1 or j<n2:
 			if i<n1 and j<n2 and t1l[i]['d'] == nl[j]['d']:
 				x = phnxt(t1l[i], nl[j])
-				if x:
+				if len(x) > 0:
 					nl[j]['l'] = x
 					nl[j]['score'] = msf(t1l[i]['score'], nl[j]['score'])
 					acc.append(nl[j])
@@ -139,16 +139,26 @@ def phrasal(terms, msf=lambda x, y: x+y):
 		t1l = acc
 	return t1l
 
+def andal(terms):
+	merged = merge_and(get_scored_list(terms[0]), get_scored_list(terms[1]))
+	for t in terms[2:]:
+		merged = merge_and(merged, get_scored_list(t))
+	return merged
 
+def oral(terms):
+	merged = merge_and(get_scored_list(terms[0]), get_scored_list(terms[1]))
+	for t in terms[2:]:
+		merged = merge_and(merged, get_scored_list(t))
+	return merged
 
-while True:
-	query = map(base, raw_input().split())
-	if len(query) == 1:
-		print 'fuck!'
-	#merged = merge_and(get_scored_list(query[0]), get_scored_list(query[1]))
-	#for q in query[2:]:
-	#	merge_and(merged, get_scored_list(q))
-	merged = phrasal(query)
-	temp = sorted(merged, key=lambda x: -x['score'])[:5]
-	print temp
-	open_doc(temp[0]['d'])
+if __name__ == '__main__':
+	while True:
+		query = map(base, raw_input().split())
+		print query
+		#merged = merge_and(get_scored_list(query[0]), get_scored_list(query[1]))
+		#for q in query[2:]:
+		#	merge_and(merged, get_scored_list(q))
+		merged = andal(query)
+		temp = sorted(merged, key=lambda x: -x['score'])[:5]
+		print temp
+		open_doc(temp[0]['d'])

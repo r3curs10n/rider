@@ -10,7 +10,7 @@ def deserialize(block):
 def get_node(f, head_ptr):
 	f.seek(head_ptr)
 	node_strs = []
-	buf_size = 1024
+	buf_size = 1024*16
 	while True:
 		buf = f.read(1024)
 		hp = buf.find('#')
