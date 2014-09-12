@@ -30,14 +30,25 @@ def is_stop_word(w):
 			stopwords[s] = True
 	return w in stopwords
 
-def get_tokens(src):
+def get_tokens(src, filter_stop_words=True):
 	src = src.lower()
 	r = re.compile('[a-z][a-z\']*[a-z]')
 	tok_list = []
 	i = -1
 	for x in r.finditer(src):
 		i+=1
-		if is_stop_word(x.group(0)):
+		if filter_stop_words and is_stop_word(x.group(0)):
 			continue
 		tok_list.append((i, base(x.group(0))))
 	return tok_list
+
+def get_tok_count(src):
+	src = src.lower()
+	r = re.findall('[a-z][a-z\']*[a-z]', src, re.DOTALL)
+	cns = 0
+	cal = 0
+	for x in r:
+		cal += 1
+		if not is_stop_word(x):
+			cns += 1
+	return (cns, cal)

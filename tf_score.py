@@ -36,7 +36,8 @@ def get_scored_list(term):
 	(doc_count, head_ptr) = wdict[term]
 	pl = get_list(f, head_ptr)
 	for i in pl:
-		i['score'] = i['t'] * log(1600000/doc_count, 2.7)
+		i['tfidf_score'] = i['t'] * log(1600000/doc_count, 2.7)
+		i['tf_score'] = i['t']
 	return pl
 	
 def merge_or(pl1, pl2, msf=lambda x,y: x+y):
