@@ -15,9 +15,9 @@ signal.signal(signal.SIGALRM, handler)
 
 pickle = cPickle
 
-chunk = 470000
+chunk = 10000
 
-fcs = 5000
+fcs = 1000
 fcs_i = 0
 dpl = []
 
@@ -107,10 +107,11 @@ def begin_indexing():
 try:
 	begin_indexing()
 	pass
-except:
+except Exception, e:
 	index_f.truncate(prev_index_size)
 	index_f.close()
 	print 'indexing failed'
+	print e.strerr
 	sys.exit(1)
 job_chunker.done(chunk)
 dd = open('wdict', 'wb')

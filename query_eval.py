@@ -43,6 +43,7 @@ lex.lex()
 # Parsing rules
 
 precedence = (
+    ('left','NOT'),
     ('left','OR'),
     ('left','AND'),
     )
@@ -80,6 +81,9 @@ def p_error(t):
 
 import ply.yacc as yacc
 yacc.yacc()
+
+def gen_result(r):
+    return '{title: "hello", d: "%d", tf: "%f", tfidf: "%f", bm25: "%f"}' % (r['d'], r['tf_score'], r['tfidf_score'], r['bm25_score'])
 
 def query_eval(query):
     query = query.lower()

@@ -20,7 +20,22 @@ def base(s):
 
 (wdict, cc) = cPickle.load(open('wdict', 'rb'))
 f = open('index')
-print 'loaded'
+print 'index loaded'
+
+doc_lengths = cPickle.load(open('doc_lengths', 'rb'))
+avgdl = 0
+docsc = 0
+for (i,j) in doc_lengths:
+	avgdl += i
+	if i>0:
+		docsc += 1
+avgdl = avgdl/docsc
+
+def bm25(dl, tf, idf):
+	global avgdl
+	k = 1.5
+	b = 0.75
+	return idf * tf * (k+1) / (tf + k*(1-b+b*dl/avgdl))
 
 def open_doc(doc_id):
 	dir_num = doc_id // 10000
@@ -36,8 +51,10 @@ def get_scored_list(term):
 	(doc_count, head_ptr) = wdict[term]
 	pl = get_list(f, head_ptr)
 	for i in pl:
+		i['score'] = i['t'] * log(1600000/doc_count, 2.7)
 		i['tfidf_score'] = i['t'] * log(1600000/doc_count, 2.7)
 		i['tf_score'] = i['t']
+		i['bm25_score'] = bm25(doc_lengths[i['d']][0], i['t'], log(1600000/doc_count, 2.7))
 	return pl
 	
 def merge_or(pl1, pl2, msf=lambda x,y: x+y):
@@ -49,18 +66,25 @@ def merge_or(pl1, pl2, msf=lambda x,y: x+y):
 
 	while i<n1 or j<n2:
 		if i<n1 and j<n2 and pl1[i]['d'] == pl2[j]['d']:
-			merged.append({'d': pl1[i]['d'], 'score': msf(pl1[i]['score'], pl2[j]['score'])})
+			md = {
+				'd': pl1[i]['d'],
+				'score': msf(pl1[i]['score'], pl2[j]['score']),
+				'tf_score': msf(pl1[i]['tf_score'], pl2[j]['tf_score']),
+				'tfidf_score': msf(pl1[i]['tfidf_score'], pl2[j]['tfidf_score']),
+				'bm25_score': msf(pl1[i]['bm25_score'], pl2[j]['bm25_score']),
+			}
+			merged.append(md)
 			i+=1
 			j+=1
 		elif i<n1 and j==n2 or i<n1 and j<n2 and pl1[i]['d'] > pl2[j]['d']:
-			merged.append({'d': pl1[i]['d'], 'score': pl1[i]['score']})
+			merged.append(pl1[i])
 			i+=1
 		else:
-			merged.append({'d': pl2[j]['d'], 'score': pl2[j]['score']})
+			merged.append(pl2[j])
 			j+=1
 	return merged
 
-def merge_and(pl1, pl2, msf=lambda x,y: x+y):
+def merge_and(pl1, pl2, msf=lambda x,y: x*y/(x+y)):
 	i=0
 	j=0
 	merged = []
@@ -69,7 +93,14 @@ def merge_and(pl1, pl2, msf=lambda x,y: x+y):
 
 	while i<n1 or j<n2:
 		if i<n1 and j<n2 and pl1[i]['d'] == pl2[j]['d']:
-			merged.append({'d': pl1[i]['d'], 'score': msf(pl1[i]['score'], pl2[j]['score'])})
+			md = {
+				'd': pl1[i]['d'],
+				'score': msf(pl1[i]['score'], pl2[j]['score']),
+				'tf_score': msf(pl1[i]['tf_score'], pl2[j]['tf_score']),
+				'tfidf_score': msf(pl1[i]['tfidf_score'], pl2[j]['tfidf_score']),
+				'bm25_score': msf(pl1[i]['bm25_score'], pl2[j]['bm25_score']),
+			}
+			merged.append(md)
 			i+=1
 			j+=1
 		elif (i<n1 and j==n2) or (i<n1 and j<n2 and pl1[i]['d'] > pl2[j]['d']):
@@ -90,7 +121,7 @@ def merge_not(pl1, pl2):
 			i+=1
 			j+=1
 		elif (i<n1 and j==n2) or (i<n1 and j<n2 and pl1[i]['d'] > pl2[j]['d']):
-			merged.append({'d': pl1[i]['d'], 'score': pl1[i]['score']})
+			merged.append(pl1[i])
 			i+=1
 		else:
 			j+=1
