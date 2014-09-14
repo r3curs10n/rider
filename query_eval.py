@@ -1,5 +1,6 @@
 from tokenizem import base, is_stop_word
 import tf_score
+import re
 
 tokens = (
     'TERM','PHRASE',
@@ -51,6 +52,10 @@ precedence = (
 # dictionary of names
 names = { }
 
+def p_query_terms(t):
+    'query : TERM query'
+    t[0] = tf_score.merge_or(tf_score.get_scored_list(t[1]), t[2])
+
 def p_query_term(t):
     'query : TERM'
     t[0] = tf_score.get_scored_list(t[1])
@@ -82,16 +87,26 @@ def p_error(t):
 import ply.yacc as yacc
 yacc.yacc()
 
-def gen_result(r):
-    return '{title: "hello", d: "%d", tf: "%f", tfidf: "%f", bm25: "%f"}' % (r['d'], r['tf_score'], r['tfidf_score'], r['bm25_score'])
+def gen_result(r, titles):
+    title = 'untitled'
+    if titles=='true':
+        f = open('%d/%d'%(r['d']//10000,r['d']))
+        src = f.read()
+        f.close()
+        title = re.search(r'\<title\>(.*)\</title\>', src, re.DOTALL|re.IGNORECASE)
+        if title:
+            title = ' '.join(title.group(1).replace('"', '')[:50].split())
+        else:
+            title = 'Unnamed'
+        print "##", title
+    return '{"title": "%s", "d": "%d", "tf": "%f", "tfidf": "%f", "bm25": "%f"}' % (title, r['d'], r['tf_score'], r['tfidf_score'], r['bm25_score'])
 
-def query_eval(query):
+def query_eval(query, mx, ofst, score_by, titles):
     query = query.lower()
-    res = sorted(yacc.parse(query), key=lambda x: -x['score'])
-    resd = []
-    for r in res:
-        resd.append('(<a href="file:///home/shreyas/code/rider/%d/%d">%d</a>, %f)' % (r['d']//10000, r['d'], r['d'], r['score']))
-    return '<br>'.join(resd)
+    res = sorted(yacc.parse(query), key=lambda x: -x[score_by])[ofst:ofst+mx]
+    resd = [gen_result(x, titles) for x in res]
+    print 'lol'
+    return '[%s]' % ','.join(resd)
 
 if __name__ == '__main__':
     while 1:

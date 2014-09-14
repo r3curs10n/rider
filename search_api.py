@@ -18,9 +18,10 @@ class MyHandler(BaseHTTPRequestHandler):
     	args = urlparse.parse_qs(qs.query)
     	print args
     	self.send_response(200)
-    	self.send_header('Content-type', 'text/html')
+    	self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', 'http://127.0.0.1:8091')
     	self.end_headers()
-    	self.wfile.write(query_eval.query_eval(args['q'][0]))
+    	self.wfile.write(query_eval.query_eval(args['q'][0], int(args['m'][0]), int(args['o'][0]), args['sb'][0], args['titles'][0]))
     	return    
     	#except Exception, e:
         self.send_error(500,'Fuck, something went wrong!<br>' + e.strerr)

@@ -4,6 +4,7 @@ from os.path import isfile, join, exists, getsize
 import tokenizem
 from nltk import clean_html
 import signal
+import re
 
 def handler(signum, frame):
   raise Exception('timeout')
@@ -23,14 +24,17 @@ for i in xrange(162):
 		src = fp.read()
 		fp.close()
 		signal.alarm(2)
+		title=''
 		try:
-			src = clean_html(src)
+			title = re.search(r'\<title\>(.*)\</title\>', src, re.DOTALL|re.IGNORECASE)
+			title = ' '.join(title.group(1).replace('"', '')[:50].split())
 		except Exception, e:
 			continue
 		signal.alarm(0)
-		dl[int(f)] = tokenizem.get_tok_count(src)
+		dl[int(f)] = title
+		print f
 	print i
 
-f = open('doc_lengths', 'wb')
+f = open('doc_titles', 'wb')
 cPickle.dump(dl, f)
 f.close()

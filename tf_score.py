@@ -53,8 +53,9 @@ def get_scored_list(term):
 	for i in pl:
 		i['score'] = i['t'] * log(1600000/doc_count, 2.7)
 		i['tfidf_score'] = i['t'] * log(1600000/doc_count, 2.7)
-		i['tf_score'] = i['t']
+		i['tf_score'] = i['t'] + 0.0
 		i['bm25_score'] = bm25(doc_lengths[i['d']][0], i['t'], log(1600000/doc_count, 2.7))
+	print 'sz: %d' % len(pl)
 	return pl
 	
 def merge_or(pl1, pl2, msf=lambda x,y: x+y):
@@ -160,7 +161,10 @@ def phrasal(terms, msf=lambda x, y: x+y):
 				x = phnxt(t1l[i], nl[j])
 				if len(x) > 0:
 					nl[j]['l'] = x
-					nl[j]['score'] = msf(t1l[i]['score'], nl[j]['score'])
+					nl[j]['score'] = len(x)
+					nl[j]['tf_score'] = len(x)
+					nl[j]['tfidf_score'] = len(x)
+					nl[j]['bm25_score'] = len(x)
 					acc.append(nl[j])
 				i+=1
 				j+=1
