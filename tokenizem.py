@@ -7,8 +7,13 @@ from nltk.stem import PorterStemmer
 
 stemmer = None
 
+fa = sys.argv[1]
+
 def base(s):
+	global fa
 	global stemmer
+	if fa != 'stemmed':
+		return s
 	if stemmer == None:
 		stemmer = PorterStemmer()
 	ss = s

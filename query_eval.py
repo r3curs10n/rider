@@ -1,6 +1,8 @@
 from tokenizem import base, is_stop_word
 import tf_score
 import re
+import datetime
+import sys
 
 tokens = (
     'TERM','PHRASE',
@@ -18,12 +20,12 @@ t_NOT = r'\!'
 
 def t_PHRASE(t):
     r'\".*?\"'
-    t.value = map(base, t.value[1:-1].lower().split())
+    t.value = t.value[1:-1].lower().split()
     return t
 
 def t_TERM(t):
     r'[^()" \t!|*]+'
-    t.value = base(t.value.lower())
+    t.value = t.value.lower()
     print t.value
     return t
 
@@ -93,7 +95,7 @@ def gen_result(r, titles):
         f = open('%d/%d'%(r['d']//10000,r['d']))
         src = f.read()
         f.close()
-        title = re.search(r'\<title\>(.*)\</title\>', src, re.DOTALL|re.IGNORECASE)
+        title = re.search(r'\<title\>(.*?)\</title\>', src, re.DOTALL|re.IGNORECASE)
         if title:
             title = ' '.join(title.group(1).replace('"', '')[:50].split())
         else:
@@ -102,8 +104,14 @@ def gen_result(r, titles):
     return '{"title": "%s", "d": "%d", "tf": "%f", "tfidf": "%f", "bm25": "%f"}' % (title, r['d'], r['tf_score'], r['tfidf_score'], r['bm25_score'])
 
 def query_eval(query, mx, ofst, score_by, titles):
-    query = query.lower()
+    query = ' '.join(map(base, query.lower().split()))
+    stt = datetime.datetime.now()
     res = sorted(yacc.parse(query), key=lambda x: -x[score_by])[ofst:ofst+mx]
+    endt = datetime.datetime.now()
+    print (endt - stt)
+    f = open('query_log', 'a')
+    f.write(query + ' - ' + str(endt - stt) + '\n')
+    f.close()
     resd = [gen_result(x, titles) for x in res]
     print 'lol'
     return '[%s]' % ','.join(resd)

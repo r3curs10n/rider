@@ -1,4 +1,7 @@
 #Copyright Jon Berg , turtlemeat.com
+import sys, datetime
+fa = sys.argv[1]
+print fa
 
 import string,cgi,time
 from os import curdir, sep
@@ -19,12 +22,16 @@ class MyHandler(BaseHTTPRequestHandler):
     	print args
     	self.send_response(200)
     	self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', 'http://127.0.0.1:8091')
+        self.send_header('Access-Control-Allow-Origin', 'http://172.16.27.31:8091')
     	self.end_headers()
-    	self.wfile.write(query_eval.query_eval(args['q'][0], int(args['m'][0]), int(args['o'][0]), args['sb'][0], args['titles'][0]))
+        stt = datetime.datetime.now()
+        sd = query_eval.query_eval(args['q'][0], int(args['m'][0]), int(args['o'][0]), args['sb'][0], args['titles'][0])
+        ett = datetime.datetime.now()
+        sd = '{"time": "%s", "results": %s}' % (str(ett-stt), sd)
+    	self.wfile.write(sd)
     	return    
     	#except Exception, e:
-        self.send_error(500,'Fuck, something went wrong!<br>' + e.strerr)
+        self.send_error(500,'kkk, something went wrong!<br>' + e.strerr)
      
 
     def do_POST(self):
@@ -43,6 +50,7 @@ class MyHandler(BaseHTTPRequestHandler):
             
         except :
             pass
+
 
 def main():
     try:

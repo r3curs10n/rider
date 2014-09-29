@@ -2,6 +2,7 @@ from tobinary import get_list
 from math import log
 import cPickle
 import os
+import sys
 
 from nltk.stem import PorterStemmer
 
@@ -18,8 +19,15 @@ def base(s):
 		pass
 	return ss
 
-(wdict, cc) = cPickle.load(open('wdict', 'rb'))
-f = open('index')
+(wdict, cc) = (None, None)
+f = None
+fa = sys.argv[1]
+if fa == 'stemmed':
+	f = open('index')
+	(wdict, cc) = cPickle.load(open('wdict', 'rb'))
+else:
+	f = open('backup/no_stem_stop_removed/index')
+	(wdict, cc) = cPickle.load(open('backup/no_stem_stop_removed/wdict', 'rb'))
 print 'index loaded'
 
 doc_lengths = cPickle.load(open('doc_lengths', 'rb'))
@@ -47,6 +55,7 @@ def open_doc(doc_id):
 def get_scored_list(term):
 	global wdict
 	if term not in wdict:
+		print term + ' not in'
 		return []
 	(doc_count, head_ptr) = wdict[term]
 	pl = get_list(f, head_ptr)
@@ -141,7 +150,7 @@ def phnxt(l1, l2):
 			acc.append(l2[j])
 			i+=1
 			j+=1
-		elif (i<n1 and j==n2) or (i<n1 and j<n2 and l1[i]+1 > l2[j]):
+		elif (i<n1 and j==n2) or (i<n1 and j<n2 and l1[i]+1 < l2[j]):
 			i+=1
 		else:
 			j+=1
